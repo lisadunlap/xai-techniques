@@ -1,0 +1,10 @@
+setup.py
+excitationbp.egg-info/PKG-INFO
+excitationbp.egg-info/SOURCES.txt
+excitationbp.egg-info/dependency_links.txt
+excitationbp.egg-info/not-zip-safe
+excitationbp.egg-info/top_level.txt
+functions/__init__.py
+functions/eb_AvgPoolNd.py
+functions/eb_convNd.py
+functions/eb_linear.py

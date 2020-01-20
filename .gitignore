@@ -1,0 +1,8 @@
+.ipynb_checkpoints/
+__pycache__/
+data/.ipynb_checkpoints/
+data/
+.idea
+masks.npy
+techniques/masks.npy
+.gitignore
