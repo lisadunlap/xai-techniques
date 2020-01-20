@@ -36,5 +36,5 @@ Here is an example using resnet18 for all techniques:
 #### Explanations with Different Architectures and Different Classes
 ![Different Architectures and Classes](results/cat_dog_table.png)
 
-![Architectural Similarity](results/diff_architectures.png) ![Class Similarity](results/diff_classes.png)
-
+<img src="results/diff_architectures.png" title="Different Architectures" width="150" height="100" />
+![Architectural Similarity](results/diff_architectures.png)<!-- .element height="50%" width="50%" --> ![Class Similarity](results/diff_classes.png)<!-- .element height="50%" width="50%" -->

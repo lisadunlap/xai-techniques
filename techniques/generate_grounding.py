@@ -17,7 +17,10 @@ import sys
 #techniques
 #from Grad_CAM.grad_cam import gen_gcam
 #from Grad_CAM.old_grad_cam import old_gen_gcam, get_guidedBackProp_img
-from Grad_CAM.main_gcam import gen_gcam, gen_gcam_target, gen_bp, gen_gbp, gen_bp_target, gen_gbp_target
+from Grad_CAM.main_gcam import (gen_gcam, gen_gcam_target,
+                                gen_bp, gen_bp_target,
+                                gen_gbp, gen_gbp_target,
+                                gen_deconv_target, gen_deconv_target)
 from Integrated_Gradients.integrated_gradients import generate_ig
 from LIME.LIME import generate_lime_explanation
 from RISE.rise_utils import gen_rise_grounding
@@ -60,11 +63,10 @@ INDEX: whether to use a specific class index (if false then just gets
 '''
 def gen_grounding(img,
                   technique,
-                  label_name='explanation',
                   model='resnet18',
                   show=False,
                   layer='layer4',
-                  save_path='./results/master_examples/',
+                  save_path='./results/explanation',
                   target_index=1,
                   save=True,
                   device=0,
@@ -73,7 +75,6 @@ def gen_grounding(img,
     # be stored in a folder that is the predicted class
 
     if save:
-        save_path += label_name + '/'
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
@@ -101,19 +102,24 @@ def gen_grounding(img,
             mask = generate_lime_explanation(img, model, pred_rank=target_index, target_index=target_index, positive_only=True, device=device)
     elif technique == 'gradcam' or technique == 'GradCam' or technique == 'gcam':
         if not index:
-            mask = gen_gcam([img], model, target_index = target_index, show_labels=True, target_layer=layer)
+            mask = gen_gcam([img], model, target_index = target_index, target_layer=layer)
         else:
             mask = gen_gcam_target([img], model, target_index = [target_index], target_layer=layer)
     elif technique == 'backprop' or technique == 'bp':
         if not index:
-            mask = gen_bp([img], model, target_index = target_index, show_labels=True, target_layer=layer)
+            mask = gen_bp([img], model, target_index = target_index)
         else:
             mask = gen_bp_target([img], model, target_index = [target_index])
     elif technique == 'guided_backprop' or technique == 'gbp':
         if not index:
-            mask = gen_gbp([img], model, target_index = target_index, show_labels=True, target_layer=layer)
+            mask = gen_gbp([img], model, target_index = target_index)
         else:
             mask = gen_gbp_target([img], model, target_index = [target_index])
+    elif technique == 'deconv' or technique == 'deconvolution':
+        if not index:
+            mask = gen_deconv([img], model, target_index = target_index)
+        else:
+            mask = gen_deconv_target([img], model, target_index = [target_index])
     elif technique == 'ig' or technique == 'integrated-gradients':
         if not index:
             mask = generate_ig(img, model, cuda=device)
@@ -147,7 +153,6 @@ def gen_grounding(img,
 
 ''' Generates explanations for RISE, LIME, GradCAM, and IntegratedGradients'''
 def gen_all_groundings(img,
-                  label_name='explanation',
                   model='resnet18',
                   show=False,
                   layer='layer4',
@@ -164,7 +169,6 @@ def gen_all_groundings(img,
     for technique in techniques:
         mask = gen_grounding(img,
                             technique,
-                            label_name,
                             model,
                             show=False,
                             save_path=save_path,
@@ -192,7 +196,7 @@ def gen_all_groundings(img,
             ax.imshow(im)
     if save:
         try:
-            fig.savefig(os.path.join(save_path + label_name + '/' + 'all_techniques.png'))
+            fig.savefig(os.path.join(save_path + '/' + 'all_techniques.png'))
         except:
             print('cant save grid without showing')
             pass
@@ -231,7 +235,7 @@ if __name__== "__main__":
                         type=str,
                         help="technique")
     parser.add_argument("--all",
-                        type=store_true,
+                        action='store_true',
                         help="generate all techniques")
     args = parser.parse_args(sys.argv[1:])
     
@@ -241,7 +245,6 @@ if __name__== "__main__":
     # Generate All Explanations
     if args.all:
         all_expl = gen_all_groundings(img,
-                      label_name=args.name,
                       model=args.model,
                       show=False,
                       save_path=args.result_path,
@@ -253,7 +256,6 @@ if __name__== "__main__":
     else:
         expl = gen_grounding(img,
                       args.technique,
-                      label_name=args.name,
                       model=args.model,
                       show=False,
                       save_path=args.result_path,
