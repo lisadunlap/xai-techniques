@@ -13,16 +13,15 @@ import torch.nn.functional as F
 
 from data_utils.data_setup import get_model_info
 
-OBJ_NAMES = [
-    'backpack', 'bird', 'dog', 'elephant', 'kite', 'pizza', 'stop_sign',
-    'toilet', 'truck', 'zebra'
-]
-SCENE_NAMES = [
-    'bamboo_forest', 'bedroom', 'bowling_alley', 'bus_interior', 'cockpit',
-    'corn_field', 'laundromat', 'runway', 'ski_slope', 'track/outdoor'
-]
-
-cifar_classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+# Function that opens image from disk, normalizes it and converts to tensor
+read_tensor = transforms.Compose([
+    lambda x: Image.fromarray(x.astype('uint8'), 'RGB'),
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                          std=[0.229, 0.224, 0.225]),
+    lambda x: torch.unsqueeze(x, 0)
+])
 
 # for storing results; gets predicted class for given model and img
 def get_top_prediction(model_name, img):
@@ -187,16 +186,6 @@ def showGrayscaleImage(im, title='', ax=None):
         P.axis('off')
     P.imshow(im, cmap=P.cm.gray, vmin=0, vmax=1)
     P.title(title)"""
-
-# Function that opens image from disk, normalizes it and converts to tensor
-read_tensor = transforms.Compose([
-    lambda x: Image.fromarray(x.astype('uint8'), 'RGB'),
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                          std=[0.229, 0.224, 0.225]),
-    lambda x: torch.unsqueeze(x, 0)
-])
 
 transform_test = transforms.Compose([
     transforms.ToTensor(),

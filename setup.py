@@ -3,9 +3,9 @@
 
 from setuptools import setup, find_packages
 
-setup(name='vis_techniques',
+setup(name='xai_techniques',
       version='0.1',
-      description='Different Explainability Techniques',
+      description='Pytorch Implementation of XAI Techniques',
       author='Lisa Dunlap',
       author_email=['lisabdunlap@berkleley.edu'],
       packages=find_packages(),

@@ -6,12 +6,11 @@ from tqdm import tqdm
 
 
 class RISE(nn.Module):
-    def __init__(self, model, input_size, gpu_batch=100, device='cuda'):
+    def __init__(self, model, input_size, gpu_batch=100):
         super(RISE, self).__init__()
         self.model = model
         self.input_size = input_size
         self.gpu_batch = gpu_batch
-        self.device = device
 
     def generate_masks(self, N, s, p1, savepath='masks.npy'):
         cell_size = np.ceil(np.array(self.input_size) / s)
@@ -32,13 +31,13 @@ class RISE(nn.Module):
         self.masks = self.masks.reshape(-1, 1, *self.input_size)
         np.save(savepath, self.masks)
         self.masks = torch.from_numpy(self.masks).float()
-        self.masks = self.masks.to(self.device)
+        self.masks = self.masks.cuda()
         self.N = N
         self.p1 = p1
 
     def load_masks(self, filepath):
         self.masks = np.load(filepath)
-        self.masks = torch.from_numpy(self.masks).float().to(self.device)
+        self.masks = torch.from_numpy(self.masks).float().cuda()
         self.N = self.masks.shape[0]
 
     def forward(self, x):
@@ -58,8 +57,8 @@ class RISE(nn.Module):
         sal = sal.view((CL, H, W))
         sal = sal / N / self.p1
         return sal
-
-
+    
+    
 class RISEBatch(RISE):
     def forward(self, x):
         # Apply array of filters to the image
@@ -69,10 +68,10 @@ class RISEBatch(RISE):
         stack = stack.view(B * N, C, H, W)
         stack = stack
 
-        # p = nn.Softmax(dim=1)(model(stack)) in batches
+        #p = nn.Softmax(dim=1)(model(stack)) in batches
         p = []
-        for i in range(0, N * B, self.gpu_batch):
-            p.append(self.model(stack[i:min(i + self.gpu_batch, N * B)]))
+        for i in range(0, N*B, self.gpu_batch):
+            p.append(self.model(stack[i:min(i + self.gpu_batch, N*B)]))
         p = torch.cat(p)
         CL = p.size(1)
         p = p.view(N, B, CL)

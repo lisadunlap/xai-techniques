@@ -20,13 +20,12 @@ import sys
 from Grad_CAM.main_gcam import (gen_gcam, gen_gcam_target,
                                 gen_bp, gen_bp_target,
                                 gen_gbp, gen_gbp_target,
-                                gen_deconv_target, gen_deconv_target)
+                                gen_deconv, gen_deconv_target)
 from Integrated_Gradients.integrated_gradients import generate_ig
 from LIME.LIME import generate_lime_explanation
 from RISE.rise_utils import gen_rise_grounding
 from utils import get_model,get_displ_img
 from data_utils.data_setup import get_model_info, get_imagenet_classes
-from data_utils.gpu_memory import dump_tensors
 
 #if torch.cuda.is_available():
 #    torch.cuda.set_device(CUDA_VISIBLE_DEVICES)
@@ -38,7 +37,7 @@ def get_cam(img, mask):
     mask = cv2.resize(mask, (w, h))
     heatmap = cv2.cvtColor(cv2.applyColorMap(np.uint8((mask / np.max(mask)) * 255.0), cv2.COLORMAP_JET),
                            cv2.COLOR_BGR2RGB)
-    alpha = .7
+    alpha = .5
     cam = heatmap*alpha + np.float32(img)*(1-alpha)
     cam /= np.max(cam)
     return cam 
@@ -74,6 +73,8 @@ def gen_grounding(img,
     # Create result directory if it doesn't exist; all explanations should 
     # be stored in a folder that is the predicted class
 
+    if save_path[-1] != '/':
+        save_path += '/'
     if save:
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -131,8 +132,14 @@ def gen_grounding(img,
         print('ERROR: invalid explainability technique {0}'.format(technique))
         return
     
-    print('after ', mask.shape)
-    cam = get_cam(img, mask)
+    # For visualization, zero out bottom 90% of values
+    if technique in ['bp', 'gbp', 'deconv', 'ig']:
+        displ_mask = mask
+        displ_mask[displ_mask < np.percentile(displ_mask, 90)] = 0
+    else:
+        displ_mask = mask
+    
+    cam = get_cam(img, displ_mask)
     if show:
         plt.axis('off')
         cam = cv2.resize(cam, (224, 224))
@@ -161,8 +168,8 @@ def gen_all_groundings(img,
                   save=True,
                   device=0, 
                   index=False, 
-                  techniques=['rise', 'lime', 'gcam', 'bp', 'gbp', 'ig'],
-                  names = ['Original', 'RISE', 'LIME', 'Grad-CAM', 'Backpropigation', 'Guided Backpropigation', 'Integrated Gradients']):
+                  techniques=['rise', 'lime', 'gcam', 'bp', 'gbp', 'deconv', 'ig'],
+                  names = ['Original', 'RISE', 'LIME', 'Grad-CAM', 'Backpropigation', 'Guided Backpropigation', 'Deconvolution', 'Integrated Gradients']):
 
     groundings = []
     # gen all groundings
@@ -183,8 +190,8 @@ def gen_all_groundings(img,
     if show:
         fig = plt.figure(figsize=(20, 10))
         grid = ImageGrid(fig, 111,  # similar to subplot(111)
-                         nrows_ncols=(1, 1+len(techniques)),
-                         axes_pad=0.1,  # pad between axes in inch.
+                         nrows_ncols=(2, 4),
+                         axes_pad=0.3,  # pad between axes in inch.
                          )
 
         j=0
@@ -207,7 +214,7 @@ if __name__== "__main__":
     
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument("--path",
-                        default='../data/samples/cat_dog/png',
+                        default='../samples/cat_dog.png',
                         type=str,
                         help="path to img")
     parser.add_argument("--result-path",
@@ -239,7 +246,7 @@ if __name__== "__main__":
                         help="generate all techniques")
     args = parser.parse_args(sys.argv[1:])
     
-    img = cv2.imread(args.path)
+    img = cv2.cvtColor(cv2.imread(args.path), cv2.COLOR_BGR2RGB)
     img = cv2.resize(img, (224,224))
 
     # Generate All Explanations

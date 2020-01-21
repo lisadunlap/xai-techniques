@@ -71,11 +71,18 @@ def get_model(model_name):
 
 def get_imagenet_classes():
     classes = list()
-    with open('../samples/synset_words.txt') as lines:
-        for line in lines:
-            line = line.strip().split(' ', 1)[1]
-            line = line.split(', ', 1)[0].replace(' ', '_')
-            classes.append(line)
+    try:
+        with open('../samples/synset_words.txt') as lines:
+            for line in lines:
+                line = line.strip().split(' ', 1)[1]
+                line = line.split(', ', 1)[0].replace(' ', '_')
+                classes.append(line)
+    except:
+         with open('../../samples/synset_words.txt') as lines:
+            for line in lines:
+                line = line.strip().split(' ', 1)[1]
+                line = line.split(', ', 1)[0].replace(' ', '_')
+                classes.append(line)
     return classes
 
 def get_test(datadir='../data/test/',
