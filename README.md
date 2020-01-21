@@ -1,5 +1,8 @@
-# explain-eval
-Developing Metrics for Evaluating Explainability 
+# XAI Techniques
+Visualizing CNN Model Decisions
+
+## Setup
+`pip install -e .` and `cd techniques && pip install -e .`
 
 ## Running Technqiues
 Current techniques implemented:
@@ -8,9 +11,10 @@ Current techniques implemented:
 3. [Grad-CAM](techniques/Grad_CAM/main_gcam.py)
 4. [Backpropagation](techniques/Grad_CAM/main_gcam.py)
 5. [Guided Backpropagation](techniques/Grad_CAM/main_gcam.py)
+5. [Deconvolution](techniques/Grad_CAM/main_gcam.py)
 6. [Integrated Gradients](techniques/Integrated_Gradients/integrated_gradients.py)
 
-TODO: Deconvolution, Guided Grad-CAM, Grad-CAM++, Excitation BP
+TODO: Guided Grad-CAM, Grad-CAM++, Excitation BP
 
 All techniques are generated through the API [gen_grounding](techniques/generate_grounding.py). For more examples see 
 [this notebook](notebooks/Getting_Started.ipynb) 
@@ -19,6 +23,7 @@ All techniques are generated through the API [gen_grounding](techniques/generate
 `python techniques/generate_grounding.py --TECHNIQUE [lime, rise, gcam, bp, gbp, ig] --path [PATH TO IMAGE] --model [NAME OF MODEL] --deivce [DEVICE NUMBER] --index [TOPK INDEX] --result-path [RESULT PATH FOLDER] --name [CLASS NAME FOR SAVING]`
 
 Here is an example using resnet18 for just Grad-CAM:
+
 `python techniques/generate_grounding.py --technique gcam --path samples/cat_dpg.png --model resnet18 --result-path ./`
 
 ### Running All Techniques
@@ -26,6 +31,7 @@ Here is an example using resnet18 for just Grad-CAM:
 --all --path [PATH TO IMAGE] --model [NAME OF MODEL] --deivce [DEVICE NUMBER] --index [TOPK INDEX] --result-path [RESULT PATH FOLDER] --name [CLASS NAME FOR SAVING]`
 
 Here is an example using resnet18 for all techniques:
+
 `python techniques/generate_grounding.py --all --path samples/cat_dpg.png --model resnet18 --result-path ./`
 
 ## Results
@@ -35,6 +41,3 @@ Here is an example using resnet18 for all techniques:
 
 #### Explanations with Different Architectures and Different Classes
 ![Different Architectures and Classes](results/cat_dog_table.png)
-
-<img src="results/diff_architectures.png" title="Different Architectures" width="150" height="100" />
-![Architectural Similarity](results/diff_architectures.png)<!-- .element height="50%" width="50%" --> ![Class Similarity](results/diff_classes.png)<!-- .element height="50%" width="50%" -->

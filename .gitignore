@@ -6,3 +6,4 @@ data/
 masks.npy
 techniques/masks.npy
 .gitignore
+techniques/vis_techniques.egg-info
